@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plantilla Rifa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Oswald', 'Arial', sans-serif;
+      min-height: 100vh;
+      color: #fff;
+      padding: 0;
+      /* Estadio oscuro simulado con gradientes */
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(0,80,180,0.35) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 100%, rgba(0,60,150,0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(0,60,150,0.2) 0%, transparent 50%),
+        linear-gradient(180deg, #0a0e1a 0%, #0d1525 40%, #0a1220 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Luces de estadio en las esquinas */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -100px;
+      left: -100px;
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(100,160,255,0.15) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      top: -100px;
+      right: -100px;
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(100,160,255,0.15) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      text-align: center;
+      padding: 20px 16px 16px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #1a56c4, #0e3a8a);
+      border: 2px solid #d4af37;
+      border-radius: 50px;
+      padding: 4px 18px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #d4af37;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .header h1 {
+      font-family: 'Anton', 'Bebas Neue', Impact, sans-serif;
+      font-size: clamp(28px, 8vw, 48px);
+      line-height: 1;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      /* Texto dorado con gradiente */
+      background: linear-gradient(180deg, #ffe066 0%, #d4af37 40%, #a0752a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 2px 6px rgba(212,175,55,0.5));
+      margin-bottom: 4px;
+    }
+
+    .header h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(13px, 4vw, 20px);
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #75b8ff;
+      margin-bottom: 12px;
+    }
+
+    /* Bandera Argentina decorativa */
+    .arg-flag {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      margin: 0 auto 12px;
+      width: 80px;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .arg-flag .stripe { width: 100%; height: 10px; }
+    .arg-flag .stripe.celeste { background: #74b2dd; }
+    .arg-flag .stripe.white { background: #fff; }
+
+    /* Línea dorada decorativa */
+    .gold-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0;
+    }
+    .gold-line::before, .gold-line::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #d4af37, transparent);
+    }
+    .gold-star { color: #d4af37; font-size: 16px; }
+
+    /* ===== SELLER BOX ===== */
+    .seller-box {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(212,175,55,0.4);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(8px);
+    }
+    .seller-box label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #d4af37;
+      margin-bottom: 8px;
+    }
+    .seller-box input {
+      width: 100%;
+      padding: 11px 14px;
+      font-size: 16px;
+      font-family: 'Oswald', sans-serif;
+      background: rgba(0,0,0,0.4);
+      border: 2px solid rgba(116,178,221,0.4);
+      border-radius: 8px;
+      color: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .seller-box input:focus {
+      outline: none;
+      border-color: #74b2dd;
+      box-shadow: 0 0 0 3px rgba(116,178,221,0.15);
+    }
+    .seller-box input::placeholder { color: rgba(255,255,255,0.3); }
+
+    /* ===== STATS ===== */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(212,175,55,0.3);
+      border-radius: 10px;
+      padding: 12px 8px;
+      text-align: center;
+      backdrop-filter: blur(8px);
+    }
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 30px;
+      line-height: 1;
+    }
+    .stat-value.disponible { color: #fff; }
+    .stat-value.vendido { color: #4ade80; }
+    .stat-value.total { color: #d4af37; }
+
+    /* ===== GRID DE NÚMEROS ===== */
+    .grid-container {
+      background: rgba(255,255,255,0.04);
+      border: 2px solid rgba(212,175,55,0.5);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(6px);
+      box-shadow:
+        0 0 30px rgba(212,175,55,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .grid-title {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 12px;
+    }
+
+    .numbers-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+    }
+
+    .number-btn {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(10px, 2.5vw, 15px);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .number-btn.disponible {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(116,178,221,0.3);
+      color: #fff;
+    }
+    .number-btn.disponible:hover {
+      background: rgba(116,178,221,0.25);
+      border-color: #74b2dd;
+      transform: scale(1.08);
+      box-shadow: 0 0 10px rgba(116,178,221,0.3);
+    }
+
+    .number-btn.vendido {
+      background: linear-gradient(135deg, #166534, #15803d);
+      border: 1px solid #4ade80;
+      color: #86efac;
+      cursor: not-allowed;
+      opacity: 0.85;
+    }
+
+    .number-btn.reservado {
+      background: linear-gradient(135deg, #7c2d12, #c2410c);
+      border: 1px solid #f97316;
+      color: #fdba74;
+      cursor: not-allowed;
+      opacity: 0.85;
+    }
+
+    /* ===== LEYENDA ===== */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+    .legend-dot.disponible {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(116,178,221,0.3);
+    }
+    .legend-dot.vendido {
+      background: linear-gradient(135deg, #166534, #15803d);
+      border: 1px solid #4ade80;
+    }
+
+    /* ===== MENSAJES ===== */
+    .msg {
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .msg.error {
+      background: rgba(220,38,38,0.15);
+      border: 1px solid rgba(220,38,38,0.4);
+      color: #fca5a5;
+    }
+    .msg.success {
+      background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.4);
+      color: #86efac;
+    }
+
+    /* ===== LOADING ===== */
+    .loading-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(212,175,55,0.2);
+      border-top-color: #d4af37;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+      backdrop-filter: blur(4px);
+    }
+    .modal {
+      background: linear-gradient(135deg, #0d1a35, #111e3d);
+      border: 2px solid rgba(212,175,55,0.6);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 380px;
+      width: 100%;
+      box-shadow:
+        0 0 40px rgba(212,175,55,0.2),
+        0 20px 40px rgba(0,0,0,0.6);
+    }
+    .modal-number-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #1a56c4, #0e3a8a);
+      border: 3px solid #d4af37;
+      border-radius: 12px;
+      font-family: 'Anton', Impact, sans-serif;
+      font-size: 26px;
+      color: #ffe066;
+      margin: 0 auto 16px;
+      box-shadow: 0 0 20px rgba(212,175,55,0.3);
+    }
+    .modal h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      color: #fff;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+    .modal-field {
+      margin-bottom: 14px;
+    }
+    .modal-field label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #d4af37;
+      margin-bottom: 7px;
+    }
+    .modal-field input {
+      width: 100%;
+      padding: 11px 14px;
+      font-size: 16px;
+      font-family: 'Oswald', sans-serif;
+      background: rgba(0,0,0,0.4);
+      border: 2px solid rgba(116,178,221,0.3);
+      border-radius: 8px;
+      color: #fff;
+      transition: border-color 0.2s;
+    }
+    .modal-field input:focus {
+      outline: none;
+      border-color: #74b2dd;
+      box-shadow: 0 0 0 3px rgba(116,178,221,0.15);
+    }
+    .modal-field input::placeholder { color: rgba(255,255,255,0.25); }
+
+    .modal-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);
+      margin: 16px 0;
+    }
+
+    .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+    .btn {
+      flex: 1;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Oswald', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #1a56c4, #1e40af);
+      color: #fff;
+      border: 2px solid #74b2dd;
+      box-shadow: 0 4px 12px rgba(26,86,196,0.4);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      box-shadow: 0 6px 16px rgba(37,99,235,0.5);
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.7);
+      border: 2px solid rgba(255,255,255,0.15);
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 16px 0 8px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    // 👇 RECORDÁ REEMPLAZAR ESTA DIRECCIÓN POR LA URL DE TU PROPIO SCRIPT DE GOOGLE
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHzsY6cc3NjEAsQrlFoE5iffuPXqFtapGopV7Z2kumc7Lc6gP862lvvptQ8SU9kNI7FA/exec";
+
+    function App() {
+      const [numeros, setNumeros] = React.useState({});
+      const [sellerName, setSellerName] = React.useState("");
+      const [selectedNumber, setSelectedNumber] = React.useState(null);
+      const [buyerName, setBuyerName] = React.useState("");
+      const [loading, setLoading] = React.useState(true);
+      const [saving, setSaving] = React.useState(false);
+      const [error, setError] = React.useState("");
+      const [success, setSuccess] = React.useState("");
+
+      React.useEffect(() => {
+        loadNumbers();
+        const interval = setInterval(loadNumbers, 5000);
+        return () => clearInterval(interval);
+      }, []);
+
+      const loadNumbers = async () => {
+        try {
+          const response = await fetch(SCRIPT_URL);
+          const data = await response.json();
+          if (data.error) {
+            setError("Error: " + data.error);
+          } else {
+            setNumeros(data);
+          }
+          setLoading(false);
+        } catch (err) {
+          setError("Error al cargar los números: " + err.message);
+          setLoading(false);
+        }
+      };
+
+      const handleNumberClick = (num) => {
+        const estado = numeros[String(num)];
+        if (estado === "Disponible") {
+          setSelectedNumber(num);
+          setBuyerName("");
+          setError("");
+        }
+      };
+
+      const handleSave = async () => {
+        if (!sellerName.trim()) {
+          setError("Por favor ingresa tu nombre de vendedor");
+          return;
+        }
+        if (!buyerName.trim()) {
+          setError("Por favor ingresa el nombre del comprador");
+          return;
+        }
+        setSaving(true);
+        setError("");
+        setSuccess("");
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: new URLSearchParams({
+              numero: selectedNumber,
+              comprador: buyerName,
+              vendedor: sellerName
+            })
+          });
+          const result = await response.text();
+          if (result === "OK") {
+            setSuccess(`¡Número ${selectedNumber} registrado con éxito! ✅`);
+            setNumeros(prev => ({ ...prev, [String(selectedNumber)]: "Vendido" }));
+            setSelectedNumber(null);
+            setTimeout(() => setSuccess(""), 4000);
+          } else {
+            setError("Error al guardar. Intentá de nuevo.");
+          }
+        } catch (err) {
+          setError("Error de conexión");
+        } finally {
+          setSaving(false);
+        }
+      };
+
+      // VARIABLES DE CONTEO DINÁMICO (Basadas en los datos reales del Sheets)
+      const listaDeNumeros = Object.keys(numeros).sort((a, b) => Number(a) - Number(b));
+      const totalNumeros = listaDeNumeros.length;
+      const vendidos = Object.values(numeros).filter(e => e.toLowerCase() === "vendido").length;
+      const disponibles = totalNumeros - vendidos;
+
+      return (
+        <div className="container">
+
+          {/* HEADER */}
+          <div className="header">
+            <div className="arg-flag">
+              <div className="stripe celeste"></div>
+              <div className="stripe white"></div>
+              <div className="stripe celeste"></div>
+            </div>
+            <div className="header-badge">🌟 Rifa a beneficio</div>
+            <h1>PLANTILLA SORTEO</h1>
+            <h2>Sistema de Venta · {loading ? "..." : totalNumeros} Números</h2>
+            <div className="gold-line"><span className="gold-star">★</span></div>
+          </div>
+
+          {/* MENSAJES */}
+          {error && <div className="msg error">⚠️ {error}</div>}
+          {success && <div className="msg success">🏆 {success}</div>}
+
+          {/* NOMBRE VENDEDOR */}
+          <div className="seller-box">
+            <label>⚽ Tu nombre (vendedor)</label>
+            <input
+              type="text"
+              value={sellerName}
+              onChange={(e) => setSellerName(e.target.value)}
+              placeholder="Ej: Juan Pérez"
+              disabled={saving}
+            />
+          </div>
+
+          {/* STATS DINÁMICAS */}
+          <div className="stats">
+            <div className="stat-card">
+              <div className="stat-label">Disponibles</div>
+              <div className="stat-value disponible">{loading ? "-" : disponibles}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Vendidos</div>
+              <div className="stat-value vendido">{loading ? "-" : vendidos}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Total</div>
+              <div className="stat-value total">{loading ? "-" : totalNumeros}</div>
+            </div>
+          </div>
+
+          {/* GRID */}
+          <div className="grid-container">
+            <div className="grid-title">Tocá un número disponible para registrar</div>
+            {loading ? (
+              <div className="loading-screen">
+                <div className="loading-spinner"></div>
+                <div style={{color: 'rgba(255,255,255,0.5)', fontSize: '14px'}}>Sincronizando con Google Sheets...</div>
+              </div>
+            ) : totalNumeros === 0 ? (
+              <div style={{textAlign: 'center', color: 'rgba(255,255,255,0.6)', padding: '20px 0', fontSize: '14px'}}>
+                No se detectaron números en las celdas (Columna A desde Fila 5).
+              </div>
+            ) : (
+              <div className="numbers-grid">
+                {listaDeNumeros.map(num => {
+                  const estado = numeros[num] || "Disponible";
+                  const cls = estado.toLowerCase() === "vendido" ? "vendido" : estado.toLowerCase() === "reservado" ? "reservado" : "disponible";
+                  return (
+                    <button
+                      key={num}
+                      className={`number-btn ${cls}`}
+                      onClick={() => handleNumberClick(num)}
+                      disabled={cls !== "disponible" || saving}
+                    >
+                      {num}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <div className="legend">
+              <div className="legend-item">
+                <div className="legend-dot disponible"></div>
+                Disponible
+              </div>
+              <div className="legend-item">
+                <div className="legend-dot vendido"></div>
+                Vendido
+              </div>
+            </div>
+          </div>
+
+          {/* MODAL */}
+          {selectedNumber && (
+            <div className="modal-overlay">
+              <div className="modal">
+                <div className="modal-number-badge">{selectedNumber}</div>
+                <h2>Registrar Venta</h2>
+                <div className="modal-field">
+                  <label>Nombre del comprador</label>
+                  <input
+                    type="text"
+                    value={buyerName}
+                    onChange={(e) => setBuyerName(e.target.value)}
+                    placeholder="Ej: María García"
+                    disabled={saving}
+                    autoFocus
+                  />
+                </div>
+                <div className="modal-divider"></div>
+                <div className="modal-field">
+                  <label>Vendedor</label>
+                  <input
+                    type="text"
+                    value={sellerName}
+                    onChange={(e) => setSellerName(e.target.value)}
+                    placeholder="Tu nombre"
+                    disabled={saving}
+                  />
+                </div>
+                {error && <div className="msg error" style={{marginBottom: 0}}>⚠️ {error}</div>}
+                <div className="modal-buttons">
+                  <button className="btn btn-secondary" onClick={() => { setSelectedNumber(null); setError(""); }} disabled={saving}>
+                    Cancelar
+                  </button>
+                  <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                    {saving ? "Guardando..." : "Confirmar ✓"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="footer">RIFA SOLIDARIA</div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
